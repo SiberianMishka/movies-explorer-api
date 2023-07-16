@@ -11,35 +11,9 @@ const getMovies = (req, res, next) => {
 };
 
 const createMovie = (req, res, next) => {
-  const owner = req.user._id;
-  const {
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailerLink,
-    nameRU,
-    nameEN,
-    thumbnail,
-    movieId,
-  } = req.body;
+  const { _id } = req.user;
 
-  Movie.create({
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailerLink,
-    nameRU,
-    nameEN,
-    thumbnail,
-    movieId,
-    owner,
-  })
+  Movie.create({ ...req.body, owner: _id })
     .then((movie) => res.status(201).send(movie))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
@@ -59,7 +33,6 @@ const deleteMovie = (req, res, next) => {
 
   Movie.findById(_id)
     .then((movieFound) => {
-      // console.log(movieFound.owner);
       if (!movieFound) {
         const err = new NotFoundError('Передан некорректный _id фильма');
         next(err);

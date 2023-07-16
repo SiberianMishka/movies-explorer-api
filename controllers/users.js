@@ -1,14 +1,12 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const config = require('../config');
 const BadRequestError = require('../errors/bad-request-err');
 const ConflictEmailError = require('../errors/conflict-email-err');
 const NotFoundError = require('../errors/not-found-err');
 const UnauthorizedError = require('../errors/unauthorized-err');
-
-const { NODE_ENV, JWT_SECRET } = process.env;
 
 const checkUser = (user, res) => {
   if (user) {
@@ -33,10 +31,11 @@ const createUser = (req, res, next) => {
       password: hash,
       name,
     }))
-    .then((user) => {
-      const newUser = user.toObject();
-      delete newUser.password;
-      res.send(newUser).status(201);
+    .then((newUser) => {
+      res.send({
+        email: newUser.email,
+        name: newUser.name,
+      }).status(201);
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -58,10 +57,11 @@ const createUser = (req, res, next) => {
 };
 
 const updateUserProfile = (req, res, next) => {
+  const owner = req.user._id;
   const { name, email } = req.body;
 
   User.findByIdAndUpdate(
-    req.user._id,
+    owner,
     { name, email },
     {
       new: true,
@@ -70,9 +70,16 @@ const updateUserProfile = (req, res, next) => {
   )
     .then((user) => checkUser(user, res))
     .catch((err) => {
+      if (err.code === 11000) {
+        const error = new ConflictEmailError(
+          'Пользователь с таким email уже существует',
+        );
+        next(error);
+        return;
+      }
       if (err instanceof mongoose.Error.ValidationError) {
         const error = new BadRequestError(
-          'Переданы некорректные данные при обновлении профиля',
+          'Переданы некорректные данные при создании пользователя',
         );
         next(error);
         return;
@@ -86,15 +93,15 @@ const login = (req, res, next) => {
 
   User.findOne({ email })
     .select('+password')
-    .then((user) => { // eslint-disable-line consistent-return
+    .then((user) => {
       if (!user) {
         return Promise.reject(
           new UnauthorizedError('Переданы неправильные email или пароль'),
         );
       }
-      bcrypt // return
+      return bcrypt
         .compare(password, user.password)
-        .then((matched) => { // eslint-disable-line consistent-return
+        .then((matched) => {
           if (!matched) {
             return Promise.reject(
               new UnauthorizedError('Переданы неправильные email или пароль'),
@@ -102,10 +109,10 @@ const login = (req, res, next) => {
           }
           const token = jwt.sign(
             { _id: user._id },
-            NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+            config.jwtSecret,
             { expiresIn: '7d' },
           );
-          res.send({ token }); // return
+          return res.send({ token });
         })
         .catch((err) => {
           next(err);

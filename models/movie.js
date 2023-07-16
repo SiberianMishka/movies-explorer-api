@@ -5,23 +5,23 @@ const movieSchema = new mongoose.Schema(
   {
     country: {
       type: String,
-      required: [true, 'Поле "country" должно быть заполнено'],
+      required: true,
     },
     director: {
       type: String,
-      required: [true, 'Поле "director" должно быть заполнено'],
+      required: true,
     },
     duration: {
       type: Number,
-      required: [true, 'Поле "duration" должно быть заполнено'],
+      required: true,
     },
     year: {
       type: String,
-      required: [true, 'Поле "year" должно быть заполнено'],
+      required: true,
     },
     description: {
       type: String,
-      required: [true, 'Поле "description" должно быть заполнено'],
+      required: true,
     },
     image: {
       type: String,
@@ -31,9 +31,9 @@ const movieSchema = new mongoose.Schema(
           require_tld: true,
           require_protocol: true,
         }),
-        message: 'Некорректный URL',
+        message: 'Невалидный URL',
       },
-      required: [true, 'Поле "image" должно быть заполнено'],
+      required: true,
     },
     trailerLink: {
       type: String,
@@ -43,9 +43,9 @@ const movieSchema = new mongoose.Schema(
           require_tld: true,
           require_protocol: true,
         }),
-        message: 'Некорректный URL',
+        message: 'Невалидный URL',
       },
-      required: [true, 'Поле "trailerLink" должно быть заполнено'],
+      required: true,
     },
     thumbnail: {
       type: String,
@@ -55,26 +55,26 @@ const movieSchema = new mongoose.Schema(
           require_tld: true,
           require_protocol: true,
         }),
-        message: 'Некорректный URL',
+        message: 'Невалидный URL',
       },
-      required: [true, 'Поле "thumbnail" должно быть заполнено'],
+      required: true,
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user',
-      required: [true, 'Поле "owner" должно быть заполнено'],
+      required: true,
     },
     movieId: {
       type: Number,
-      required: [true, 'Поле "movieId" должно быть заполнено'],
+      required: true,
     },
     nameRU: {
       type: String,
-      required: [true, 'Поле "nameRU" должно быть заполнено'],
+      required: true,
     },
     nameEN: {
       type: String,
-      required: [true, 'Поле "nameEN" должно быть заполнено'],
+      required: true,
     },
   },
   { versionKey: false },
